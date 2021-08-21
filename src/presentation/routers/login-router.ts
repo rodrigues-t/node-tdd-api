@@ -1,21 +1,25 @@
-import { HttpRequest } from "../helpers/http-request";
-import { HttpResponse } from "../helpers/http-response";
+import HttpRequest from '../helpers/http-request';
+import HttpResponse, {
+  badRequest,
+  serverError,
+  ok,
+} from '../helpers/http-response';
 
-export class LoginRouter {
-    route(httpRequest: HttpRequest) {
-      try {
-        const { email, password } = httpRequest.body
-        if(!email) {
-          return HttpResponse.badRequest('email');
-        }
-  
-        if(!password) {
-          return HttpResponse.badRequest('password')
-        }
-      } catch(error) {
-        HttpResponse.serverError();
+export default class LoginRouter {
+  route(httpRequest: HttpRequest): HttpResponse {
+    try {
+      const { email, password } = httpRequest.body;
+      if (!email) {
+        return badRequest('email');
       }
-  
-      return HttpResponse.ok();
-    }    
+
+      if (!password) {
+        return badRequest('password');
+      }
+    } catch (error) {
+      serverError();
+    }
+
+    return ok();
   }
+}
