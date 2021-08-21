@@ -1,9 +1,11 @@
 import { MissingParamError } from "../helpers/missing-param-error";
 import { LoginRouter } from "./login-router";
 
+const makeSut = () => new LoginRouter()
+
 describe('Login Router', () => {
   test('should return 400 if no email is provided', () => {
-    const sut = new LoginRouter();
+    const sut = makeSut();
     const httpRequest = {
       body: {
         password: '123456',
@@ -15,7 +17,7 @@ describe('Login Router', () => {
   });
 
   test('should return 400 if no password is provided', () => {
-    const sut = new LoginRouter();
+    const sut = makeSut();
     const httpRequest = {
       body: {
         email: 'ozzy@sabbath.co.uk',
