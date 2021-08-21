@@ -1,3 +1,4 @@
+import AuthUseCase from '../../domain/useCases/auth-usecase';
 import HttpRequest from '../helpers/http-request';
 import HttpResponse, {
   badRequest,
@@ -6,6 +7,12 @@ import HttpResponse, {
 } from '../helpers/http-response';
 
 export default class LoginRouter {
+  authUseCase: AuthUseCase;
+
+  constructor(authUseCase: AuthUseCase) {
+    this.authUseCase = authUseCase;
+  }
+
   route(httpRequest: HttpRequest): HttpResponse {
     try {
       const { email, password } = httpRequest.body;
@@ -16,10 +23,11 @@ export default class LoginRouter {
       if (!password) {
         return badRequest('password');
       }
-    } catch (error) {
-      serverError();
-    }
 
-    return ok();
+      this.authUseCase.auth(email, password);
+      return ok();
+    } catch (error) {
+      return serverError();
+    }
   }
 }
