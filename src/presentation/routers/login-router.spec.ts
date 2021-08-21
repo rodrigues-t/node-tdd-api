@@ -1,6 +1,6 @@
 import { mocked } from 'ts-jest/utils';
 import AuthUseCase from '../../domain/useCases/auth-usecase';
-import MissingParamError from '../helpers/missing-param-error';
+import MissingParamError from '../errors/missing-param-error';
 import LoginRouter from './login-router';
 
 const authSpy = jest.fn((email: string, password: string) => {

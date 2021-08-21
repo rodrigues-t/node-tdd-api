@@ -1,4 +1,5 @@
-import MissingParamError from './missing-param-error';
+import UnauthorizedError from '../errors/unauthorized-error';
+import MissingParamError from '../errors/missing-param-error';
 
 export default interface HttpResponse {
   statusCode: number;
@@ -20,4 +21,9 @@ const serverError = (): HttpResponse => ({
   body: new Error('server error'),
 });
 
-export { ok, badRequest, serverError };
+const unauthorizedError = (): HttpResponse => ({
+  statusCode: 401,
+  body: new UnauthorizedError('unauthorized error'),
+});
+
+export { ok, badRequest, serverError, unauthorizedError };
