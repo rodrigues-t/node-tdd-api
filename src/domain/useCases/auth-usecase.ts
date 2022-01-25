@@ -1,8 +1,5 @@
 export default class AuthUseCase {
-  auth(email: string, password: string): unknown {
-    return {
-      email,
-      password,
-    };
+  async auth(email: string, password: string): Promise<string | null> {
+    return 'any_token';
   }
 }

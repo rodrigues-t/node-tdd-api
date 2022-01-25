@@ -4,6 +4,7 @@ import HttpResponse, {
   badRequest,
   serverError,
   ok,
+  unauthorizedError,
 } from '../helpers/http-response';
 
 export default class LoginRouter {
@@ -13,7 +14,7 @@ export default class LoginRouter {
     this.authUseCase = authUseCase;
   }
 
-  route(httpRequest: HttpRequest): HttpResponse {
+  async route(httpRequest: HttpRequest): Promise<HttpResponse> {
     try {
       const { email, password } = httpRequest.body;
       if (!email) {
@@ -24,8 +25,13 @@ export default class LoginRouter {
         return badRequest('password');
       }
 
-      this.authUseCase.auth(email, password);
-      return ok();
+      const accessToken = await this.authUseCase.auth(email, password);
+
+      if (!accessToken) {
+        return unauthorizedError();
+      }
+
+      return ok({ accessToken });
     } catch (error) {
       return serverError();
     }
