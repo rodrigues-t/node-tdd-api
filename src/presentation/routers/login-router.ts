@@ -1,4 +1,5 @@
 import AuthUseCase from '../../domain/useCases/auth-usecase';
+import MissingParamError from '../errors/missing-param-error';
 import HttpRequest from '../helpers/http-request';
 import HttpResponse, {
   badRequest,
@@ -18,11 +19,11 @@ export default class LoginRouter {
     try {
       const { email, password } = httpRequest.body;
       if (!email) {
-        return badRequest('email');
+        return badRequest(new MissingParamError('email'));
       }
 
       if (!password) {
-        return badRequest('password');
+        return badRequest(new MissingParamError('password'));
       }
 
       const accessToken = await this.authUseCase.auth(email, password);

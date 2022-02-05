@@ -1,21 +1,24 @@
-import UnauthorizedError from '../errors/unauthorized-error';
+import InvalidParamError from '../errors/invalid-param-error';
+import LoginResponse from './http-response-types/login-response';
 import MissingParamError from '../errors/missing-param-error';
 import ServerError from '../errors/server-error';
-import LoginResponse from './http-response-types/login-response';
+import UnauthorizedError from '../errors/unauthorized-error';
 
 export default interface HttpResponse {
   statusCode: number;
   body: Error | null | LoginResponse;
 }
 
+export type BadRequestErrors = MissingParamError | InvalidParamError;
+
 const ok = (data: LoginResponse): HttpResponse => ({
   statusCode: 200,
   body: data,
 });
 
-const badRequest = (paramName: string): HttpResponse => ({
+const badRequest = (error: BadRequestErrors): HttpResponse => ({
   statusCode: 400,
-  body: new MissingParamError(paramName),
+  body: error,
 });
 
 const serverError = (): HttpResponse => ({
