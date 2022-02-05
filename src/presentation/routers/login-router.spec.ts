@@ -1,4 +1,4 @@
-import { mocked } from 'ts-jest/utils';
+import { mocked } from 'jest-mock';
 import AuthUseCase from '../../domain/useCases/auth-usecase';
 import MissingParamError from '../errors/missing-param-error';
 import ServerError from '../errors/server-error';
@@ -51,7 +51,7 @@ describe('Login Router', () => {
     const { sut } = makeSut();
     const httpRequest = {
       body: {
-        password: '123456',
+        password: 'valid_password',
       },
     };
     const httpResponse = await sut.route(httpRequest);
@@ -63,7 +63,7 @@ describe('Login Router', () => {
     const { sut } = makeSut();
     const httpRequest = {
       body: {
-        email: 'ozzy@sabbath.co.uk',
+        email: 'valid@email.com',
       },
     };
     const httpResponse = await sut.route(httpRequest);
@@ -76,8 +76,8 @@ describe('Login Router', () => {
     const mockedAuthUseCase = mocked(AuthUseCase, true);
     const httpRequest = {
       body: {
-        email: 'iommi@sabbath.co.uk',
-        password: '123456',
+        email: 'valid@email.com',
+        password: 'valid_password',
       },
     };
     sut.route(httpRequest);
