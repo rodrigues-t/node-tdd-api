@@ -151,6 +151,22 @@ describe('Login Router', () => {
     expect(httpResponse.body).toEqual(new ServerError());
   });
 
+  test('should return 500 if no EmailValidator is provided', async () => {
+    const sut = new LoginRouter(new AuthUseCase(), null!);
+    const mockedEmailValidator = mocked(EmailValidator, true);
+    const httpRequest = {
+      body: {
+        email: 'any@email.com',
+        password: 'any_password',
+      },
+    };
+    const httpResponse = await sut.route(httpRequest);
+    expect(httpResponse.statusCode).toBe(500);
+    expect(httpResponse.body).toEqual(new ServerError());
+    expect(mockedEmailValidator).toHaveBeenCalledTimes(0);
+    expect(isValidEmailSpy).toHaveBeenCalledTimes(0);
+  });
+
   test('should return 200 when valid credentials are provided', async () => {
     const { sut } = makeSut();
     const httpRequest = {
