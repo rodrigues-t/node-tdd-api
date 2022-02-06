@@ -1,9 +1,11 @@
 import { mocked } from 'jest-mock';
 import AuthUseCase from '../../domain/useCases/auth-usecase';
+import InvalidParamError from '../errors/invalid-param-error';
 import MissingParamError from '../errors/missing-param-error';
 import ServerError from '../errors/server-error';
 import UnauthorizedError from '../errors/unauthorized-error';
 import LoginRouter from './login-router';
+import EmailValidator from '../../utils/helpers/email-validator';
 
 const authSpy = jest.fn(
   async (email: string, password: string): Promise<string | null> =>
@@ -18,32 +20,49 @@ jest.mock('../../domain/useCases/auth-usecase', () => {
   });
 });
 
-beforeEach(() => {
-  mocked(AuthUseCase).mockClear();
+const isValidEmailSpy = jest.fn((email: string) => true);
+
+jest.mock('../../utils/helpers/email-validator', () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      isValid: isValidEmailSpy,
+    };
+  });
 });
 
-const makeBaseSut = () => {
+beforeEach(() => {
+  isValidEmailSpy.mockClear();
+  mocked(AuthUseCase).mockClear();
+  mocked(EmailValidator).mockClear();
+});
+
+const makeSut = () => {
   const authUseCase = new AuthUseCase();
-  const sut = new LoginRouter(authUseCase);
+  const emailValidator = new EmailValidator();
+  const sut = new LoginRouter(authUseCase, emailValidator);
 
   return {
     authUseCase,
+    emailValidator,
     sut,
   };
 };
 
-const makeSut = () => makeBaseSut();
+const makeSutWithInvalidEmail = () => {
+  isValidEmailSpy.mockReturnValueOnce(false);
+  return makeSut();
+};
 
-const makeInvalidSut = () => {
+const makeSutWithAuthDenied = () => {
   authSpy.mockResolvedValueOnce(null);
-  return makeBaseSut();
+  return makeSut();
 };
 
 const makeSutWithError = () => {
   authSpy.mockImplementationOnce(() => {
     throw new Error();
   });
-  return makeBaseSut();
+  return makeSut();
 };
 
 describe('Login Router', () => {
@@ -51,7 +70,7 @@ describe('Login Router', () => {
     const { sut } = makeSut();
     const httpRequest = {
       body: {
-        password: 'valid_password',
+        password: 'any_password',
       },
     };
     const httpResponse = await sut.route(httpRequest);
@@ -63,7 +82,7 @@ describe('Login Router', () => {
     const { sut } = makeSut();
     const httpRequest = {
       body: {
-        email: 'valid@email.com',
+        email: 'any@email.com',
       },
     };
     const httpResponse = await sut.route(httpRequest);
@@ -71,13 +90,30 @@ describe('Login Router', () => {
     expect(httpResponse.body).toEqual(new MissingParamError('password'));
   });
 
+  test('should return 400 if invalid email is provided', async () => {
+    const { sut } = makeSutWithInvalidEmail();
+    const mockedEmailValidator = mocked(EmailValidator, true);
+    const httpRequest = {
+      body: {
+        email: 'invalid@email.com',
+        password: 'any_password',
+      },
+    };
+    const httpResponse = await sut.route(httpRequest);
+    expect(httpResponse.statusCode).toBe(400);
+    expect(httpResponse.body).toEqual(new InvalidParamError('email'));
+    expect(mockedEmailValidator).toHaveBeenCalledTimes(1);
+    expect(isValidEmailSpy).toHaveBeenCalledTimes(1);
+    expect(isValidEmailSpy).toHaveBeenCalledWith(httpRequest.body.email);
+  });
+
   test('should execute AuthUseCase with correct params', () => {
     const { sut } = makeSut();
     const mockedAuthUseCase = mocked(AuthUseCase, true);
     const httpRequest = {
       body: {
-        email: 'valid@email.com',
-        password: 'valid_password',
+        email: 'any@email.com',
+        password: 'any_password',
       },
     };
     sut.route(httpRequest);
@@ -90,7 +126,7 @@ describe('Login Router', () => {
   });
 
   test('should return 401 when invalid credentials are provided', async () => {
-    const { sut } = makeInvalidSut();
+    const { sut } = makeSutWithAuthDenied();
     const httpRequest = {
       body: {
         email: 'invalid@email.com',
@@ -102,7 +138,7 @@ describe('Login Router', () => {
     expect(httpResponse.body).toEqual(new UnauthorizedError());
   });
 
-  test('should return 500 wheb AuthUseCase throws an error', async () => {
+  test('should return 500 when AuthUseCase throws an error', async () => {
     const { sut } = makeSutWithError();
     const httpRequest = {
       body: {
