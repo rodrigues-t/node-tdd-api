@@ -7,7 +7,16 @@ import UnauthorizedError from '../errors/unauthorized-error';
 import LoginRouter from './login-router';
 import EmailValidator from '../../utils/helpers/email-validator';
 
+enum SutType {
+  Regular,
+  AuthFail,
+  AuthThrowError,
+  EmailValidatorFail,
+  EmailValidatorThrowError,
+}
+
 const authSpy = jest.fn(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (email: string, password: string): Promise<string | null> =>
     'any_token',
 );
@@ -20,6 +29,7 @@ jest.mock('../../domain/useCases/auth-usecase', () => {
   });
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const isValidEmailSpy = jest.fn((email: string) => true);
 
 jest.mock('../../utils/helpers/email-validator', () => {
@@ -36,33 +46,49 @@ beforeEach(() => {
   mocked(EmailValidator).mockClear();
 });
 
-const makeSut = () => {
+const sutAuthFail = () => authSpy.mockResolvedValueOnce(null);
+
+const sutAuthThrowError = () => {
+  authSpy.mockImplementationOnce(() => {
+    throw new Error();
+  });
+};
+
+const sutEmailValidatorFail = () => isValidEmailSpy.mockReturnValueOnce(false);
+
+const sutEmailValidatorThrowError = () => {
+  isValidEmailSpy.mockImplementationOnce(() => {
+    throw new Error();
+  });
+};
+
+const makeSut = (sutType: SutType = SutType.Regular) => {
   const authUseCase = new AuthUseCase();
   const emailValidator = new EmailValidator();
   const sut = new LoginRouter(authUseCase, emailValidator);
+
+  switch (sutType) {
+    case SutType.AuthFail:
+      sutAuthFail();
+      break;
+    case SutType.AuthThrowError:
+      sutAuthThrowError();
+      break;
+    case SutType.EmailValidatorFail:
+      sutEmailValidatorFail();
+      break;
+    case SutType.EmailValidatorThrowError:
+      sutEmailValidatorThrowError();
+      break;
+    default:
+      break;
+  }
 
   return {
     authUseCase,
     emailValidator,
     sut,
   };
-};
-
-const makeSutWithInvalidEmail = () => {
-  isValidEmailSpy.mockReturnValueOnce(false);
-  return makeSut();
-};
-
-const makeSutWithAuthDenied = () => {
-  authSpy.mockResolvedValueOnce(null);
-  return makeSut();
-};
-
-const makeSutWithError = () => {
-  authSpy.mockImplementationOnce(() => {
-    throw new Error();
-  });
-  return makeSut();
 };
 
 describe('Login Router', () => {
@@ -91,7 +117,7 @@ describe('Login Router', () => {
   });
 
   test('should return 400 if invalid email is provided', async () => {
-    const { sut } = makeSutWithInvalidEmail();
+    const { sut } = makeSut(SutType.EmailValidatorFail);
     const mockedEmailValidator = mocked(EmailValidator, true);
     const httpRequest = {
       body: {
@@ -126,7 +152,7 @@ describe('Login Router', () => {
   });
 
   test('should return 401 when invalid credentials are provided', async () => {
-    const { sut } = makeSutWithAuthDenied();
+    const { sut } = makeSut(SutType.AuthFail);
     const httpRequest = {
       body: {
         email: 'invalid@email.com',
@@ -139,7 +165,7 @@ describe('Login Router', () => {
   });
 
   test('should return 500 when AuthUseCase throws an error', async () => {
-    const { sut } = makeSutWithError();
+    const { sut } = makeSut(SutType.AuthThrowError);
     const httpRequest = {
       body: {
         email: 'valid@email.com',
@@ -152,6 +178,7 @@ describe('Login Router', () => {
   });
 
   test('should return 500 if no EmailValidator is provided', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const sut = new LoginRouter(new AuthUseCase(), null!);
     const mockedEmailValidator = mocked(EmailValidator, true);
     const httpRequest = {
@@ -165,6 +192,19 @@ describe('Login Router', () => {
     expect(httpResponse.body).toEqual(new ServerError());
     expect(mockedEmailValidator).toHaveBeenCalledTimes(0);
     expect(isValidEmailSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('should return 500 when EmailValidator throws an error', async () => {
+    const { sut } = makeSut(SutType.EmailValidatorThrowError);
+    const httpRequest = {
+      body: {
+        email: 'any@email.com',
+        password: 'any_password',
+      },
+    };
+    const httpResponse = await sut.route(httpRequest);
+    expect(httpResponse.statusCode).toBe(500);
+    expect(httpResponse.body).toEqual(new ServerError());
   });
 
   test('should return 200 when valid credentials are provided', async () => {
