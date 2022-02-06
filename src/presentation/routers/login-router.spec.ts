@@ -130,7 +130,6 @@ describe('Login Router', () => {
     expect(httpResponse.body).toEqual(new InvalidParamError('email'));
     expect(mockedEmailValidator).toHaveBeenCalledTimes(1);
     expect(isValidEmailSpy).toHaveBeenCalledTimes(1);
-    expect(isValidEmailSpy).toHaveBeenCalledWith(httpRequest.body.email);
   });
 
   test('should execute AuthUseCase with correct params', () => {
@@ -205,6 +204,21 @@ describe('Login Router', () => {
     const httpResponse = await sut.route(httpRequest);
     expect(httpResponse.statusCode).toBe(500);
     expect(httpResponse.body).toEqual(new ServerError());
+  });
+
+  test('should execute EmailValidator with correct params', () => {
+    const { sut } = makeSut();
+    const mockedEmailValidator = mocked(EmailValidator, true);
+    const httpRequest = {
+      body: {
+        email: 'any@email.com',
+        password: 'any_password',
+      },
+    };
+    sut.route(httpRequest);
+    expect(mockedEmailValidator).toHaveBeenCalledTimes(1);
+    expect(isValidEmailSpy).toHaveBeenCalledTimes(1);
+    expect(isValidEmailSpy).toHaveBeenCalledWith(httpRequest.body.email);
   });
 
   test('should return 200 when valid credentials are provided', async () => {
