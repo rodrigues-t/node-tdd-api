@@ -10,7 +10,7 @@
     "lint:fix": "eslint --fix --ext .ts .",
     "test": "jest --watch --silent",
     "test:staged": "jest --passWithNoTests --findRelatedTests --silent --noStackTrace",
-    "test:ci": "jest --covarage --noStackTrace",
+    "test:ci": "jest --coverage --noStackTrace",
     "prepare": "husky install"
   },
   "repository": {
