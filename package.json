@@ -8,9 +8,10 @@
     "dev": "ts-node-dev --transpile-only --ignore-watch node_modules src/index.ts",
     "lint": "eslint --ext .ts .",
     "lint:fix": "eslint --fix --ext .ts .",
-    "test": "jest --watch --silent",
-    "test:staged": "jest --passWithNoTests --findRelatedTests --silent --noStackTrace",
-    "test:ci": "jest --coverage --noStackTrace",
+    "test": "jest --silent --noStackTrace",
+    "test:unit": "npm test -- --watch",
+    "test:staged": "npm test -- --passWithNoTests --findRelatedTests",
+    "test:ci": "npm test -- --coverage",
     "prepare": "husky install"
   },
   "repository": {
