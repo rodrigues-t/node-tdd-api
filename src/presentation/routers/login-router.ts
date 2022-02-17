@@ -1,7 +1,6 @@
 import AuthUseCase from '../../domain/useCases/auth-usecase';
 import EmailValidator from '../../utils/helpers/email-validator';
-import InvalidParamError from '../errors/invalid-param-error';
-import MissingParamError from '../errors/missing-param-error';
+import { InvalidParamError, MissingParamError } from '../errors';
 import HttpRequest from '../helpers/http-request';
 import HttpResponse, {
   badRequest,

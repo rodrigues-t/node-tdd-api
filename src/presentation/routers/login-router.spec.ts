@@ -1,9 +1,12 @@
 import { mocked } from 'jest-mock';
 import AuthUseCase from '../../domain/useCases/auth-usecase';
-import InvalidParamError from '../errors/invalid-param-error';
-import MissingParamError from '../errors/missing-param-error';
-import ServerError from '../errors/server-error';
-import UnauthorizedError from '../errors/unauthorized-error';
+import {
+  InvalidParamError,
+  MissingParamError,
+  ServerError,
+  UnauthorizedError,
+} from '../errors';
+
 import LoginRouter from './login-router';
 import EmailValidator from '../../utils/helpers/email-validator';
 
