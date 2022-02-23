@@ -5,6 +5,11 @@ export default class AuthUseCase {
     if (!email) {
       throw new MissingParamError('email');
     }
+
+    if (!password) {
+      throw new MissingParamError('password');
+    }
+
     return 'any_token';
   }
 }
