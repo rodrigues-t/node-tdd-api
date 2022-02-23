@@ -1,5 +1,4 @@
-// const isEmailSpy = jest.fn((email: string) => true);
-import { MissingParamError } from '../../presentation/errors';
+import { MissingParamError } from '../errors';
 import isEmailSpy from '../../test/spies/email-spy';
 import EmailValidator from './email-validator';
 
@@ -36,7 +35,9 @@ describe('Email Validator', () => {
 
   test('should throw MissingParamError if null email is provides', () => {
     const sut = makeSut();
-    const email: string | null = null;
-    expect(() => sut.isValid(email!)).toThrow(MissingParamError);
+    const email = null;
+    expect(() => sut.isValid(email as unknown as string)).toThrow(
+      MissingParamError,
+    );
   });
 });

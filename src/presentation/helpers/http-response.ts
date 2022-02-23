@@ -1,6 +1,5 @@
-import InvalidParamError from '../errors/invalid-param-error';
+import { InvalidParamError, MissingParamError } from '../../utils/errors';
 import LoginResponse from './http-response-types/login-response';
-import MissingParamError from '../errors/missing-param-error';
 import ServerError from '../errors/server-error';
 import UnauthorizedError from '../errors/unauthorized-error';
 
