@@ -4,6 +4,7 @@ import { ServerError, UnauthorizedError } from '../errors';
 import { InvalidParamError, MissingParamError } from '../../utils/errors';
 import LoginRouter from './login-router';
 import EmailValidator from '../../utils/helpers/email-validator';
+import LoadUserByEmailRepository from '../../infra/repositories/load-user-by-email-repository';
 
 enum SutType {
   Regular,
@@ -15,8 +16,7 @@ enum SutType {
 
 const authSpy = jest.fn(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async (email: string, password: string): Promise<string | null> =>
-    'any_token',
+  async (email: string, password: string): Promise<string | null> => 'any_token',
 );
 
 jest.mock('../../domain/useCases/auth-usecase', () => {
@@ -61,7 +61,7 @@ const sutEmailValidatorThrowError = () => {
 };
 
 const makeSut = (sutType: SutType = SutType.Regular) => {
-  const authUseCase = new AuthUseCase();
+  const authUseCase = new AuthUseCase(new LoadUserByEmailRepository());
   const emailValidator = new EmailValidator();
   const sut = new LoginRouter(authUseCase, emailValidator);
 
@@ -142,10 +142,7 @@ describe('Login Router', () => {
     sut.route(httpRequest);
     expect(mockedAuthUseCase).toHaveBeenCalledTimes(1);
     expect(authSpy).toHaveBeenCalledTimes(1);
-    expect(authSpy).toHaveBeenCalledWith(
-      httpRequest.body.email,
-      httpRequest.body.password,
-    );
+    expect(authSpy).toHaveBeenCalledWith(httpRequest.body.email, httpRequest.body.password);
   });
 
   test('should return 401 when invalid credentials are provided', async () => {
@@ -176,7 +173,7 @@ describe('Login Router', () => {
 
   test('should return 500 if no EmailValidator is provided', async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const sut = new LoginRouter(new AuthUseCase(), null!);
+    const sut = new LoginRouter(new AuthUseCase(new LoadUserByEmailRepository()), null!);
     const mockedEmailValidator = mocked(EmailValidator, true);
     const httpRequest = {
       body: {
