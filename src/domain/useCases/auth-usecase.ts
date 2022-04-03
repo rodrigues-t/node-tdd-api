@@ -1,11 +1,21 @@
 import LoadUserByEmailRepository from '../../infra/repositories/load-user-by-email-repository';
 import { MissingParamError } from '../../utils/errors';
+import Encrypter from '../../utils/helpers/encrypter';
+import TokenGenerator from '../../utils/helpers/token-generator';
 
 export default class AuthUseCase {
   loadUserByEmailRepository: LoadUserByEmailRepository;
+  encrypter: Encrypter;
+  tokenGenerator: TokenGenerator;
 
-  constructor(loadUserByEmailRepository: LoadUserByEmailRepository) {
+  constructor(
+    loadUserByEmailRepository: LoadUserByEmailRepository,
+    encrypter: Encrypter,
+    tokenGenerator: TokenGenerator,
+  ) {
     this.loadUserByEmailRepository = loadUserByEmailRepository;
+    this.encrypter = encrypter;
+    this.tokenGenerator = tokenGenerator;
   }
 
   async auth(email: string, password: string): Promise<string | null> {
@@ -17,8 +27,13 @@ export default class AuthUseCase {
       throw new MissingParamError('password');
     }
 
-    await this.loadUserByEmailRepository.load(email);
+    const user = await this.loadUserByEmailRepository.load(email);
+    const isValid = user ? await this.encrypter.compare(password, user.password) : false;
 
-    return 'any_token';
+    if (user && isValid) {
+      return this.tokenGenerator.generate(user.id);
+    }
+
+    return null;
   }
 }

@@ -5,6 +5,8 @@ import { InvalidParamError, MissingParamError } from '../../utils/errors';
 import LoginRouter from './login-router';
 import EmailValidator from '../../utils/helpers/email-validator';
 import LoadUserByEmailRepository from '../../infra/repositories/load-user-by-email-repository';
+import Encrypter from '../../utils/helpers/encrypter';
+import TokenGenerator from '../../utils/helpers/token-generator';
 
 enum SutType {
   Regular,
@@ -61,7 +63,7 @@ const sutEmailValidatorThrowError = () => {
 };
 
 const makeSut = (sutType: SutType = SutType.Regular) => {
-  const authUseCase = new AuthUseCase(new LoadUserByEmailRepository());
+  const authUseCase = new AuthUseCase(new LoadUserByEmailRepository(), new Encrypter(), new TokenGenerator(''));
   const emailValidator = new EmailValidator();
   const sut = new LoginRouter(authUseCase, emailValidator);
 
@@ -173,7 +175,10 @@ describe('Login Router', () => {
 
   test('should return 500 if no EmailValidator is provided', async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const sut = new LoginRouter(new AuthUseCase(new LoadUserByEmailRepository()), null!);
+    const sut = new LoginRouter(
+      new AuthUseCase(new LoadUserByEmailRepository(), new Encrypter(), new TokenGenerator('')),
+      null!,
+    );
     const mockedEmailValidator = mocked(EmailValidator, true);
     const httpRequest = {
       body: {

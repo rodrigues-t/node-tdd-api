@@ -36,8 +36,6 @@ describe('Email Validator', () => {
   test('should throw MissingParamError if null email is provides', () => {
     const sut = makeSut();
     const email = null;
-    expect(() => sut.isValid(email as unknown as string)).toThrow(
-      MissingParamError,
-    );
+    expect(() => sut.isValid(email as unknown as string)).toThrow(MissingParamError);
   });
 });

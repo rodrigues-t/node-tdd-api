@@ -2,12 +2,7 @@ import AuthUseCase from '../../domain/useCases/auth-usecase';
 import EmailValidator from '../../utils/helpers/email-validator';
 import { InvalidParamError, MissingParamError } from '../../utils/errors';
 import HttpRequest from '../helpers/http-request';
-import HttpResponse, {
-  badRequest,
-  serverError,
-  ok,
-  unauthorizedError,
-} from '../helpers/http-response';
+import HttpResponse, { badRequest, serverError, ok, unauthorizedError } from '../helpers/http-response';
 
 export default class LoginRouter {
   authUseCase: AuthUseCase;
