@@ -1,5 +1,7 @@
+import bcrypt from 'bcrypt';
+
 export default class Encrypter {
-  async compare(password: string, hashedPassword: string): Promise<boolean> {
-    return true;
+  async compare(value: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(value, hash);
   }
 }
