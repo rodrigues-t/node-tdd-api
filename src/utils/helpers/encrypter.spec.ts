@@ -29,4 +29,11 @@ describe('Encrypter', () => {
     const isValid = await sut.compare('any_value', 'hashed_value');
     expect(isValid).toBe(false);
   });
+
+  test('bcrypt should be called with correct values', async () => {
+    const sut = makeSut();
+    await sut.compare('any_password', 'hashed_value');
+    expect(compareSpy).toHaveBeenCalledTimes(1);
+    expect(compareSpy).toBeCalledWith('any_password', 'hashed_value');
+  });
 });
