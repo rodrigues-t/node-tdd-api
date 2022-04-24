@@ -1,4 +1,5 @@
 import compareSpy from '../../test/spies/bcrypt-spies';
+import { MissingParamError } from '../errors';
 import Encrypter from './encrypter';
 
 jest.mock('bcrypt', () => {
@@ -35,5 +36,19 @@ describe('Encrypter', () => {
     await sut.compare('any_password', 'hashed_value');
     expect(compareSpy).toHaveBeenCalledTimes(1);
     expect(compareSpy).toBeCalledWith('any_password', 'hashed_value');
+  });
+
+  test('Should throw missing param error if null password is provided', async () => {
+    const sut = makeSut();
+    const value = null;
+    const promise = sut.compare(value as unknown as string, 'hashed_value');
+    expect(promise).rejects.toThrow(MissingParamError);
+  });
+
+  test('Should throw missing param error if null hash is provided', async () => {
+    const sut = makeSut();
+    const hash = null;
+    const promise = sut.compare('any_password', hash as unknown as string);
+    expect(promise).rejects.toThrow(MissingParamError);
   });
 });
