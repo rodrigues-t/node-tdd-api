@@ -9,7 +9,7 @@ import AuthUseCase from './auth-usecase';
 const loadSpy = jest.fn(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (email: string): Promise<User | null> => ({
-    id: 1,
+    id: '1',
     email,
     password: 'hashed_password',
   }),
@@ -117,7 +117,7 @@ describe('Auth UseCase', () => {
     const sut = makeSut();
 
     const mockedUser = {
-      id: 100,
+      id: '100',
       email: '',
       password: '',
     };
